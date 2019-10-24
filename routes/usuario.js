@@ -1,7 +1,6 @@
 // Requires
 var express = require("express");
 var bcrypt = require("bcryptjs");
-var jwt = require("jsonwebtoken");
 var mdAutenticacion = require("../middlewares/autenticacion");
 
 // Inicializar variables
@@ -15,28 +14,47 @@ var Usuario = require("../models/usuario");
 //  Obtener todos los usuarios: sin autenticacion
 // ==============================================
 app.get("/", (req, res, next) => {
+  // paginacion: desde puede ser vacio
+  let desde = req.query.desde || 0;
+  // desde debe ser un numero
+  desde = Number(desde);
+
   Usuario.find(
     {
       // query
     },
     // campos
     "nombre email img role"
-  ).exec((err, usuarios) => {
-    // error bd
-    if (err) {
-      return res.status(500).json({
-        ok: false,
-        mensaje: "Error cargando usuarios",
-        errors: err
-      });
-    }
+  )
+    // paginacion
+    .skip(desde)
+    .limit(5)
 
-    // ok
-    res.status(200).json({
-      ok: true,
-      usuarios: usuarios
+    .exec((err, usuarios) => {
+      // error bd
+      if (err) {
+        return res.status(500).json({
+          ok: false,
+          mensaje: "Error cargando usuarios",
+          errors: err
+        });
+      }
+
+      // total usuarios
+      Usuario.count(
+        {
+          /*filtro*/
+        },
+        (err, cuenta) => {
+          // ok
+          res.status(200).json({
+            ok: true,
+            usuarios: usuarios,
+            total: cuenta
+          });
+        }
+      );
     });
-  });
 });
 
 // // ==============================================
