@@ -1,19 +1,20 @@
 // Requires
-var express = require("express");
-var bcrypt = require("bcryptjs");
-var mdAutenticacion = require("../middlewares/autenticacion");
+var express = require('express');
+var bcrypt = require('bcryptjs');
+var mdAutenticacion = require('../middlewares/autenticacion');
+//var jwt = require('jsonwebtoken');
+//var SEED = require("../config/config").SEED;
 
 // Inicializar variables
 var app = express();
-//var SEED = require("../config/config").SEED;
 
 // Modelo de usuario
-var Usuario = require("../models/usuario");
+var Usuario = require('../models/usuario');
 
 // ==============================================
 //  Obtener todos los usuarios: sin autenticacion
 // ==============================================
-app.get("/", (req, res, next) => {
+app.get('/', (req, res, next) => {
   // paginacion: desde puede ser vacio
   let desde = req.query.desde || 0;
   // desde debe ser un numero
@@ -22,9 +23,10 @@ app.get("/", (req, res, next) => {
   Usuario.find(
     {
       // query
+      // si no pongo nada obtengo todos los registros
     },
     // campos
-    "nombre email img role"
+    'nombre email img role'
   )
     // paginacion
     .skip(desde)
@@ -35,7 +37,7 @@ app.get("/", (req, res, next) => {
       if (err) {
         return res.status(500).json({
           ok: false,
-          mensaje: "Error cargando usuarios",
+          mensaje: 'Error cargando usuarios',
           errors: err
         });
       }
@@ -82,7 +84,7 @@ app.get("/", (req, res, next) => {
 // ==============================================
 //  Crear un nuevo usuario (con autenticacion: verificaToken)
 // ==============================================
-app.post("/", mdAutenticacion.verificaToken, (req, res) => {
+app.post('/', mdAutenticacion.verificaToken, (req, res) => {
   // Uso BodyParser: libreria que toma la informacion del post y crea un objeto de javascript
   var body = req.body;
 
@@ -99,7 +101,7 @@ app.post("/", mdAutenticacion.verificaToken, (req, res) => {
     if (err) {
       return res.status(400).json({
         ok: false,
-        mensaje: "Error al crear usuario",
+        mensaje: 'Error al crear usuario',
         errors: err
       });
     }
@@ -116,7 +118,7 @@ app.post("/", mdAutenticacion.verificaToken, (req, res) => {
 // ==============================================
 //  Actualizar usuario (con autenticacion: verificaToken)
 // ==============================================
-app.put("/:id", mdAutenticacion.verificaToken, (req, res) => {
+app.put('/:id', mdAutenticacion.verificaToken, (req, res) => {
   var id = req.params.id;
   var body = req.body;
 
@@ -125,7 +127,7 @@ app.put("/:id", mdAutenticacion.verificaToken, (req, res) => {
     if (err) {
       return res.status(500).json({
         ok: false,
-        mensaje: "Error al buscar usuario",
+        mensaje: 'Error al buscar usuario',
         errors: err
       });
     }
@@ -135,7 +137,7 @@ app.put("/:id", mdAutenticacion.verificaToken, (req, res) => {
       return res.status(400).json({
         ok: false,
         mensaje: `El usuario con el id ${id} no existe`,
-        errors: { message: "No existe un usuario con ese id" }
+        errors: { message: 'No existe un usuario con ese id' }
       });
     }
 
@@ -149,13 +151,13 @@ app.put("/:id", mdAutenticacion.verificaToken, (req, res) => {
       if (err) {
         return res.status(400).json({
           ok: false,
-          mensaje: "Error al actualizar usuario",
+          mensaje: 'Error al actualizar usuario',
           errors: err
         });
       }
 
       // para no mostrar el password en la respuesta
-      usuarioGuardado.password = ":)"; // aquí no estoy actualizando el password porque ya ha pasado el save, esto es el callback
+      usuarioGuardado.password = ':)'; // aquí no estoy actualizando el password porque ya ha pasado el save, esto es el callback
 
       // ok
       res.status(200).json({
@@ -170,7 +172,7 @@ app.put("/:id", mdAutenticacion.verificaToken, (req, res) => {
 // ==============================================
 //  Borrar usuario por el id (con autenticacion: verificaToken)
 // ==============================================
-app.delete("/:id", mdAutenticacion.verificaToken, (req, res) => {
+app.delete('/:id', mdAutenticacion.verificaToken, (req, res) => {
   var id = req.params.id;
 
   Usuario.findByIdAndRemove(id, (err, usuarioBorrado) => {
@@ -178,19 +180,22 @@ app.delete("/:id", mdAutenticacion.verificaToken, (req, res) => {
     if (err) {
       return res.status(500).json({
         ok: false,
-        mensaje: "Error al borrar usuario",
+        mensaje: 'Error al borrar usuario',
         errors: err
       });
     }
 
-    // si el usuario no existe usuarioBorrado es null
+    // si el usuario no existe, usuarioBorrado es null
     if (!usuarioBorrado) {
       return res.status(400).json({
         ok: false,
         mensaje: `El usuario con el id ${id} no existe`,
-        errors: { message: "No existe un usuario con ese id" }
+        errors: { message: 'No existe un usuario con ese id' }
       });
     }
+
+    // para no mostrar el password en la respuesta
+    usuarioBorrado.password = ':)'; // aquí no estoy actualizando el password porque ya ha pasado el save, esto es el callback
 
     // ok
     res.status(200).json({

@@ -1,32 +1,33 @@
 // Requires
-var express = require("express");
-var fileUpload = require("express-fileupload");
-var fs = require("fs"); // filesystem
+var express = require('express');
+var fileUpload = require('express-fileupload');
+var fs = require('fs'); // filesystem
 
 // Inicializar variables
 var app = express();
 
 // Modelos
-var Hospital = require("../models/hospital");
-var Medico = require("../models/medico");
-var Usuario = require("../models/usuario");
+var Hospital = require('../models/hospital');
+var Medico = require('../models/medico');
+var Usuario = require('../models/usuario');
 
 // Middleware
 app.use(fileUpload());
 
 // Rutas
-app.put("/:tipo/:id", (req, res) => {
+// uso put en lugar de post porque estoy modificando registros (añadiendo imagen a registro ya creado)
+app.put('/:tipo/:id', (req, res) => {
   var tipo = req.params.tipo;
   var id = req.params.id;
 
   // tipos validos de coleccion
-  var tiposValidos = ["usuarios", "hospitales", "medicos"];
+  var tiposValidos = ['usuarios', 'hospitales', 'medicos'];
   if (tiposValidos.indexOf(tipo) < 0) {
     return res.status(400).json({
       ok: false,
-      mensaje: "Tipo de colección inválido",
+      mensaje: 'Tipo de colección inválido',
       errors: {
-        message: "Las colecciones admitidas son: " + tiposValidos.join(", ")
+        message: 'Las colecciones admitidas son: ' + tiposValidos.join(', ')
       }
     });
   }
@@ -35,48 +36,49 @@ app.put("/:tipo/:id", (req, res) => {
   if (!req.files) {
     return res.status(400).json({
       ok: false,
-      mensaje: "No se ha seleccionado archivos",
-      errors: { message: "Debe seleccionar alguna imagen" }
+      mensaje: 'No se ha seleccionado archivos',
+      errors: { message: 'Debe seleccionar alguna imagen' }
     });
   }
 
   // obtener nombre del archivo
   var archivo = req.files.imagen;
   // extension del archivo
-  var partesNombre = archivo.name.split("."); // partes del nombre del archivo separadas por .
+  var partesNombre = archivo.name.split('.'); // partes del nombre del archivo separadas por .
   var extensionArchivo = partesNombre[partesNombre.length - 1]; // cojo la ultima parte
 
   // extension de archivo aceptadas
-  var extensionesValidas = ["png", "jpg", "gif", "jpeg"];
+  var extensionesValidas = ['png', 'jpg', 'gif', 'jpeg'];
   if (extensionesValidas.indexOf(extensionArchivo) < 0) {
     return res.status(400).json({
       ok: false,
-      mensaje: "Extensión no válida",
+      mensaje: 'Extensión no válida',
       errors: {
         message:
-          "Las extensiones admitidas son " + extensionesValidas.join(", ")
+          'Las extensiones admitidas son ' + extensionesValidas.join(', ')
       }
     });
   }
 
-  // nombre de archivo personalizado 112451212121-123.jpg
+  // nombre de archivo personalizado idUsuario-numAleatorio.jpg
   var nombreArchivo = `${id}-${new Date().getMilliseconds()}.${extensionArchivo}`;
 
-  //mover el archivo
+  // mover (subir) el archivo de la localización temporal a un path
   var path = `uploads/${tipo}/${nombreArchivo}`;
   archivo.mv(path, err => {
     // error
     if (err) {
       return res.status(500).json({
         ok: false,
-        mensaje: "Error al mover archivo",
+        mensaje: 'Error al subir archivo',
         errors: err
       });
     }
 
-    subirImagenPorTipo(tipo, id, nombreArchivo, res);
+    // ok
+    asignarImagenPorTipo(tipo, id, nombreArchivo, res);
 
-    // la respuesta la doy en subirImagenPorTipo
+    // la respuesta la doy en asignarImagenPorTipo
     // res.status(200).json({
     //   ok: true,
     //   mensaje: "Archivo movido",
@@ -85,20 +87,20 @@ app.put("/:tipo/:id", (req, res) => {
   });
 });
 
-function subirImagenPorTipo(tipo, id, nombreArchivo, res) {
+function asignarImagenPorTipo(tipo, id, nombreArchivo, res) {
   switch (tipo) {
-    case "usuarios":
+    case 'usuarios':
       Usuario.findById(id, (err, usuario) => {
         // usuario no existe
         if (!usuario) {
           return res.status(400).json({
             ok: false,
-            mensaje: "Usuario no existe",
-            errors: { message: "Usuario no existe" }
+            mensaje: 'Usuario no existe',
+            errors: { message: 'Usuario no existe' }
           });
         }
 
-        var pathViejo = "./uploads/usuarios/" + usuario.img;
+        var pathViejo = './uploads/usuarios/' + usuario.img;
 
         // borrar imagen anterior si existe
         if (fs.existsSync(pathViejo)) {
@@ -110,27 +112,28 @@ function subirImagenPorTipo(tipo, id, nombreArchivo, res) {
 
         // lo guardo
         usuario.save((err, usuarioActualizado) => {
-          usuarioActualizado.password = ":)";
+          usuarioActualizado.password = ':)';
           return res.status(200).json({
             ok: true,
-            mensaje: "Imagen de usuario actualizada",
+            mensaje: 'Imagen de usuario actualizada',
             usuario: usuarioActualizado
           });
         });
       });
       break;
-    case "hospitales":
+
+    case 'hospitales':
       Hospital.findById(id, (err, hospital) => {
         // hospital no existe
         if (!hospital) {
           return res.status(400).json({
             ok: false,
-            mensaje: "Hospital no existe",
-            errors: { message: "Hospital no existe" }
+            mensaje: 'Hospital no existe',
+            errors: { message: 'Hospital no existe' }
           });
         }
 
-        var pathViejo = "./uploads/hospitales/" + hospital.img;
+        var pathViejo = './uploads/hospitales/' + hospital.img;
 
         // borrar imagen anterior si existe
         if (fs.existsSync(pathViejo)) {
@@ -144,25 +147,25 @@ function subirImagenPorTipo(tipo, id, nombreArchivo, res) {
         hospital.save((err, hospitalActualizado) => {
           return res.status(200).json({
             ok: true,
-            mensaje: "Imagen de hospital actualizada",
+            mensaje: 'Imagen de hospital actualizada',
             hospital: hospitalActualizado
           });
         });
       });
       break;
 
-    case "medicos":
+    case 'medicos':
       Medico.findById(id, (err, medico) => {
         // medico no existe
         if (!medico) {
           return res.status(400).json({
             ok: false,
-            mensaje: "Médico no existe",
-            errors: { message: "Médico no existe" }
+            mensaje: 'Médico no existe',
+            errors: { message: 'Médico no existe' }
           });
         }
 
-        var pathViejo = "./uploads/medicos/" + medico.img;
+        var pathViejo = './uploads/medicos/' + medico.img;
 
         // borrar imagen anterior si existe
         if (fs.existsSync(pathViejo)) {
@@ -176,7 +179,7 @@ function subirImagenPorTipo(tipo, id, nombreArchivo, res) {
         medico.save((err, medicoActualizado) => {
           return res.status(200).json({
             ok: true,
-            mensaje: "Imagen de médico actualizada",
+            mensaje: 'Imagen de médico actualizada',
             medico: medicoActualizado
           });
         });

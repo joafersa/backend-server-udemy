@@ -1,17 +1,17 @@
 // Requires
-var express = require("express");
-var mdAutenticacion = require("../middlewares/autenticacion");
+var express = require('express');
+var mdAutenticacion = require('../middlewares/autenticacion');
 
 // Inicializar variables
 var app = express();
 
 // Modelo de usuario
-var Medico = require("../models/medico");
+var Medico = require('../models/medico');
 
 // ==============================================
 //  Obtener todos los medicos: sin autenticacion
 // ==============================================
-app.get("/", (req, res, next) => {
+app.get('/', (req, res, next) => {
   // paginacion: desde puede ser vacio
   let desde = req.query.desde || 0;
   // desde debe ser un numero
@@ -27,16 +27,16 @@ app.get("/", (req, res, next) => {
     .skip(desde)
     .limit(5)
 
-    // campos relacionados
-    .populate("usuario", "nombre email")
-    .populate("hospital")
+    // tablas relacionados
+    .populate('usuario', 'nombre email')
+    .populate('hospital')
 
     .exec((err, medicos) => {
       // error bd
       if (err) {
         return res.status(500).json({
           ok: false,
-          mensaje: "Error cargando medicos",
+          mensaje: 'Error cargando medicos',
           errors: err
         });
       }
@@ -55,7 +55,7 @@ app.get("/", (req, res, next) => {
 // ==============================================
 //  Crear un nuevo medico (con autenticacion: verificaToken)
 // ==============================================
-app.post("/", mdAutenticacion.verificaToken, (req, res) => {
+app.post('/', mdAutenticacion.verificaToken, (req, res) => {
   // Uso BodyParser: libreria que toma la informacion del post y crea un objeto de javascript
   var body = req.body;
 
@@ -70,7 +70,7 @@ app.post("/", mdAutenticacion.verificaToken, (req, res) => {
     if (err) {
       return res.status(400).json({
         ok: false,
-        mensaje: "Error al crear médico",
+        mensaje: 'Error al crear médico',
         errors: err
       });
     }
@@ -86,7 +86,7 @@ app.post("/", mdAutenticacion.verificaToken, (req, res) => {
 // ==============================================
 //  Actualizar medico (con autenticacion: verificaToken)
 // ==============================================
-app.put("/:id", mdAutenticacion.verificaToken, (req, res) => {
+app.put('/:id', mdAutenticacion.verificaToken, (req, res) => {
   var id = req.params.id;
   var body = req.body;
 
@@ -95,7 +95,7 @@ app.put("/:id", mdAutenticacion.verificaToken, (req, res) => {
     if (err) {
       return res.status(500).json({
         ok: false,
-        mensaje: "Error al buscar médico",
+        mensaje: 'Error al buscar médico',
         errors: err
       });
     }
@@ -105,7 +105,7 @@ app.put("/:id", mdAutenticacion.verificaToken, (req, res) => {
       return res.status(400).json({
         ok: false,
         mensaje: `El médico con el id ${id} no existe`,
-        errors: { message: "No existe un médico con ese id" }
+        errors: { message: 'No existe un médico con ese id' }
       });
     }
 
@@ -119,7 +119,7 @@ app.put("/:id", mdAutenticacion.verificaToken, (req, res) => {
       if (err) {
         return res.status(400).json({
           ok: false,
-          mensaje: "Error al actualizar médico",
+          mensaje: 'Error al actualizar médico',
           errors: err
         });
       }
@@ -136,7 +136,7 @@ app.put("/:id", mdAutenticacion.verificaToken, (req, res) => {
 // ==============================================
 //  Borrar medico por el id (con autenticacion: verificaToken)
 // ==============================================
-app.delete("/:id", mdAutenticacion.verificaToken, (req, res) => {
+app.delete('/:id', mdAutenticacion.verificaToken, (req, res) => {
   var id = req.params.id;
 
   Medico.findByIdAndRemove(id, (err, medicoBorrado) => {
@@ -144,7 +144,7 @@ app.delete("/:id", mdAutenticacion.verificaToken, (req, res) => {
     if (err) {
       return res.status(500).json({
         ok: false,
-        mensaje: "Error al borrar médico",
+        mensaje: 'Error al borrar médico',
         errors: err
       });
     }
@@ -154,7 +154,7 @@ app.delete("/:id", mdAutenticacion.verificaToken, (req, res) => {
       return res.status(400).json({
         ok: false,
         mensaje: `El médico con el id ${id} no existe`,
-        errors: { message: "No existe un médico con ese id" }
+        errors: { message: 'No existe un médico con ese id' }
       });
     }
 

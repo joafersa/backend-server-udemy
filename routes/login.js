@@ -1,19 +1,19 @@
 // Requires
-var express = require("express");
-var bcrypt = require("bcryptjs");
-var jwt = require("jsonwebtoken");
+var express = require('express');
+var bcrypt = require('bcryptjs');
+var jwt = require('jsonwebtoken');
+var SEED = require('../config/config').SEED;
 
 // Inicializar variables
 var app = express();
-var SEED = require("../config/config").SEED;
 
 // Modelo de usuario
-var Usuario = require("../models/usuario");
+var Usuario = require('../models/usuario');
 
 // ==============================================
 //  Login
 // ==============================================
-app.post("/", (req, res) => {
+app.post('/', (req, res) => {
   // Uso BodyParser: libreria que toma la informacion del post y crea un objeto de javascript
   var body = req.body;
 
@@ -23,7 +23,7 @@ app.post("/", (req, res) => {
     if (err) {
       return res.status(500).json({
         ok: false,
-        mensaje: "Error al buscar usuario",
+        mensaje: 'Error al buscar usuario',
         errors: err
       });
     }
@@ -32,27 +32,27 @@ app.post("/", (req, res) => {
     if (!usuarioBD) {
       return res.status(400).json({
         ok: false,
-        mensaje: "Credenciales incorrectas (email)",
+        mensaje: 'Credenciales incorrectas (email)', // en producción no diré si falla por el email o por el password
         errors: err
       });
     }
 
-    // aqui tengo un usuario válido. Ahora compruebo la contraseña
+    // aquí tengo un usuario válido. Ahora compruebo la contraseña
     if (!bcrypt.compareSync(body.password, usuarioBD.password)) {
       // la contraseña no es correcta
       return res.status(400).json({
         ok: false,
-        mensaje: "Credenciales incorrectas (password)",
+        mensaje: 'Credenciales incorrectas (password)', // en producción no diré si falla por el email o por el password
         errors: err
       });
     }
 
-    // aqui el usuario y la contraseña son validos
+    // aquí el usuario y la contraseña son válidos
 
     // para no mostrar el password en el token
-    usuarioBD.password = ":)"; // aquí no estoy actualizando el password porque esto es el callback
+    usuarioBD.password = ':)'; // aquí no estoy actualizando el password porque esto es el callback
 
-    // creo token JWT (Json Web Token) payload, seed, fecha expiracion (4h)
+    // creo token JWT (Json Web Token) payload, semilla(seed), fecha expiracion (4h)
     var token = jwt.sign({ usuario: usuarioBD }, SEED, {
       expiresIn: 14400
     });

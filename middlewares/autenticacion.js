@@ -1,8 +1,8 @@
 // Requires
-var jwt = require("jsonwebtoken");
+var jwt = require('jsonwebtoken');
 
 // Inicializar variables
-var SEED = require("../config/config").SEED;
+var SEED = require('../config/config').SEED;
 
 // ==============================================
 //  Verificar token
@@ -16,7 +16,7 @@ exports.verificaToken = function(req, res, next) {
     if (err) {
       return res.status(401).json({
         ok: false,
-        mensaje: "Token incorrecto",
+        mensaje: 'Token incorrecto',
         errors: err
       });
     }

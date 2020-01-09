@@ -1,17 +1,17 @@
 // Requires
-var express = require("express");
-var mdAutenticacion = require("../middlewares/autenticacion");
+var express = require('express');
+var mdAutenticacion = require('../middlewares/autenticacion');
 
 // Inicializar variables
 var app = express();
 
 // Modelo de usuario
-var Hospital = require("../models/hospital");
+var Hospital = require('../models/hospital');
 
 // ==============================================
 //  Obtener todos los hospitales: sin autenticacion
 // ==============================================
-app.get("/", (req, res, next) => {
+app.get('/', (req, res, next) => {
   // paginacion: desde puede ser vacio
   let desde = req.query.desde || 0;
   // desde debe ser un numero
@@ -27,13 +27,14 @@ app.get("/", (req, res, next) => {
     .skip(desde)
     .limit(5)
 
-    .populate("usuario", "nombre email")
+    // carga los datos de la tabla usuario, campos nombre y email
+    .populate('usuario', 'nombre email')
     .exec((err, hospitales) => {
       // error bd
       if (err) {
         return res.status(500).json({
           ok: false,
-          mensaje: "Error cargando hospitales",
+          mensaje: 'Error cargando hospitales',
           errors: err
         });
       }
@@ -52,7 +53,7 @@ app.get("/", (req, res, next) => {
 // ==============================================
 //  Crear un nuevo hospital (con autenticacion: verificaToken)
 // ==============================================
-app.post("/", mdAutenticacion.verificaToken, (req, res) => {
+app.post('/', mdAutenticacion.verificaToken, (req, res) => {
   // Uso BodyParser: libreria que toma la informacion del post y crea un objeto de javascript
   var body = req.body;
 
@@ -66,7 +67,7 @@ app.post("/", mdAutenticacion.verificaToken, (req, res) => {
     if (err) {
       return res.status(400).json({
         ok: false,
-        mensaje: "Error al crear hospital",
+        mensaje: 'Error al crear hospital',
         errors: err
       });
     }
@@ -82,7 +83,7 @@ app.post("/", mdAutenticacion.verificaToken, (req, res) => {
 // ==============================================
 //  Actualizar hospital (con autenticacion: verificaToken)
 // ==============================================
-app.put("/:id", mdAutenticacion.verificaToken, (req, res) => {
+app.put('/:id', mdAutenticacion.verificaToken, (req, res) => {
   var id = req.params.id;
   var body = req.body;
 
@@ -91,7 +92,7 @@ app.put("/:id", mdAutenticacion.verificaToken, (req, res) => {
     if (err) {
       return res.status(500).json({
         ok: false,
-        mensaje: "Error al buscar hospital",
+        mensaje: 'Error al buscar hospital',
         errors: err
       });
     }
@@ -101,7 +102,7 @@ app.put("/:id", mdAutenticacion.verificaToken, (req, res) => {
       return res.status(400).json({
         ok: false,
         mensaje: `El hospital con el id ${id} no existe`,
-        errors: { message: "No existe un hospital con ese id" }
+        errors: { message: 'No existe un hospital con ese id' }
       });
     }
 
@@ -114,7 +115,7 @@ app.put("/:id", mdAutenticacion.verificaToken, (req, res) => {
       if (err) {
         return res.status(400).json({
           ok: false,
-          mensaje: "Error al actualizar hospital",
+          mensaje: 'Error al actualizar hospital',
           errors: err
         });
       }
@@ -131,7 +132,7 @@ app.put("/:id", mdAutenticacion.verificaToken, (req, res) => {
 // ==============================================
 //  Borrar hospital por el id (con autenticacion: verificaToken)
 // ==============================================
-app.delete("/:id", mdAutenticacion.verificaToken, (req, res) => {
+app.delete('/:id', mdAutenticacion.verificaToken, (req, res) => {
   var id = req.params.id;
 
   Hospital.findByIdAndRemove(id, (err, hospitalBorrado) => {
@@ -139,7 +140,7 @@ app.delete("/:id", mdAutenticacion.verificaToken, (req, res) => {
     if (err) {
       return res.status(500).json({
         ok: false,
-        mensaje: "Error al borrar hospital",
+        mensaje: 'Error al borrar hospital',
         errors: err
       });
     }
@@ -149,7 +150,7 @@ app.delete("/:id", mdAutenticacion.verificaToken, (req, res) => {
       return res.status(400).json({
         ok: false,
         mensaje: `El hospital con el id ${id} no existe`,
-        errors: { message: "No existe un hospital con ese id" }
+        errors: { message: 'No existe un hospital con ese id' }
       });
     }
 
